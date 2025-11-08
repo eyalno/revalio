@@ -1,0 +1,10 @@
+ Create a virtual environment
+In the terminal:
+	python3 -m venv venv
+Activate it:
+	source venv/bin/activate
+
+pip3 install openai
+pip3 install pdfplumber
+pip3 install tiktoken
+
