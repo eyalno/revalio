@@ -8,3 +8,10 @@ pip3 install openai
 pip3 install pdfplumber
 pip3 install tiktoken
 
+OpenAI Secret Key: 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
+
+
+
+Todo : 
+Export api secret key external file 
+ remove print and total toke
