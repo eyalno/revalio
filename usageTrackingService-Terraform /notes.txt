@@ -4,6 +4,28 @@ export TF_VAR_db_password="SuperSecret123"
 
 terraform apply -var-file="terraform.tfvars"
 
+
+Outputs:
+
+api_endpoint = "https://fcj4iyrm96.execute-api.us-east-2.amazonaws.com"
+dynamodb_table = "usage_aggregates"
+rds_endpoint = "terraform-20251109070909505100000001.cny00iaioxw4.us-east-2.rds.amazonaws.com"
+
+Your full endpoints will be:
+POST https://fcj4iyrm96.execute-api.us-east-2.amazonaws.com/usage
+GET  https://fcj4iyrm96.execute-api.us-east-2.amazonaws.com/stats/average
+
+
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"username": "eyal", "usage_time": 30}' \
+  https://fcj4iyrm96.execute-api.us-east-2.amazonaws.com/usage
+
+curl https://fcj4iyrm96.execute-api.us-east-2.amazonaws.com/stats/average
+
+
+
+
 lambda/
  └─ lambda_function.py
 

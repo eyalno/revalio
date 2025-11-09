@@ -1,8 +1,7 @@
-
 import os
 import json
 import boto3
-import psycopg2
+import pg8000
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
@@ -13,10 +12,10 @@ def lambda_handler(event, context):
         username = body['username']
         usage_time = body['usage_time']
 
-        # Update RDS
-        conn = psycopg2.connect(
+        # Update RDS using pg8000
+        conn = pg8000.connect(
             host=os.environ['RDS_ENDPOINT'],
-            dbname=os.environ['RDS_DB'],
+            database=os.environ['RDS_DB'],
             user=os.environ['RDS_USER'],
             password=os.environ['RDS_PASSWORD']
         )

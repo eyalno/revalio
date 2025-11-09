@@ -1,1 +1,4 @@
 /.DS_Store
+usageTrackingService-Terraform /.DS_Store
+usageTrackingService-Terraform /.terraform.lock.hcl
+usageTrackingService-Terraform /terraform.tfstate.backup
