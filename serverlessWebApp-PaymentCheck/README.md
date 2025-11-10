@@ -22,14 +22,15 @@ This README explains how to:
 ---
 
 ## Architecture (Mermaid Diagram)
+
 ```mermaid
 flowchart TD
-  A[Client Browser] -- GET --> CF[CloudFront<br/>(OAC to S3 Static Site)]
-  CF --> S3Site[S3 Bucket (Static Site)<br/>index.html, JS, CSS]
-  A -- POST /login --> APIGW[API Gateway<br/>Route: /login]
-  APIGW --> L[Lambda Function<br/>login_handler]
-  L -- s3:GetObject --> S3Data[S3 Bucket (Data)<br/>users.json (hashed passwords, status)]
-  L -- JSON {ok | expired | invalid} --> A
+  A[Client Browser] --> CF[CloudFront (OAC to S3 Static Site)]
+  CF --> S3Site[S3 Bucket - Static Site (index.html, JS, CSS)]
+  A --> APIGW[API Gateway - /login]
+  APIGW --> L[Lambda Function - login_handler]
+  L --> S3Data[S3 Bucket - Data (users.json)]
+  L --> A
 
 ## Files in This Repository
 
