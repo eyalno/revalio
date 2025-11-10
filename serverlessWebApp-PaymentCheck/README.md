@@ -23,7 +23,8 @@ This README explains how to:
 
 ## Architecture Diagram
 
-![Architecture Diagram](/architecture.png)
+<img width="1536" height="1024" alt="architecture" src="https://github.com/user-attachments/assets/3e630416-81b0-4bf7-9763-de13d02a3df8" />
+
 
 
 
