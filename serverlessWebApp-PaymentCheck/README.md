@@ -68,7 +68,7 @@ Example content:
 cloud front URL - Static web app (frontend)::
   https://d3hsdedk703oiv.cloudfront.net
 
-Input       Expected Response
+Input               Expected Response
 
 eyal / eyal         { "status": "Welcome" }
 
