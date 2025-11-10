@@ -47,7 +47,7 @@ To install the hashing dependency:
 pip3 install passlib
 
 
-⸻
+⸻-
 
 Sample User Data File (S3 Object)
 
