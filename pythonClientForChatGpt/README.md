@@ -27,13 +27,13 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip3 install -r requirements.txt
 ```
 
-4. Create a `.env` file in the project root with the following content:
+4. update `.env` file in the project root with the following content:
 ```
 CHAT_GPT_API_KEY=your_openai_api_key_here
 PDF_FILE_NAME=path_to_your_pdf_file
-GPT_MODEL=gpt-4-1106-preview  # or your preferred model
+GPT_MODEL=gpt-5  #gpt-4-1106-preview  # or your preferred model
 SAFETY_MARGIN=500  # token buffer for conversation
-MAX_MODEL_TOKENS=64000  # maximum tokens for your chosen model
+MAX_MODEL_TOKENS=1000  # maximum tokens for your chosen model
 ```
 
 ## Usage
