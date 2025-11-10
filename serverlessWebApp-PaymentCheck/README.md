@@ -21,39 +21,15 @@ This README explains how to:
 
 ---
 
-## Architecture Schema
-
-+——————+                     +––––––––––––––+
-|      Client      |  HTTPS (GET)        |        CloudFront          |
-|  Browser (JS)    +––––––––––>+   OAC to S3 Static Site    |
-+———+––––+                     +–––––––+———––+
-|                                               |
-|                                               | OAC
-|                                               v
-|                                    +–––––––––––+
-|                                    |   S3 Bucket (Site)   |
-|                                    |  index.html, JS, CSS |
-|                                    +–––––––––––+
-|
-| HTTPS (POST /login)
-v
-+——————+          IAM auth          +–––––––––––+
-|   API Gateway    +—————————>|      Lambda          |
-|  Route: /login   |                            |   login_handler      |
-+———+––––+                            +–––––+———–+
-|                                                |
-|                          s3:GetObject          |
-|                                                v
-|                                     +–––––––––––+
-|                                     |  S3 Bucket (Data)    |
-|                                     |   users.json (hashed |
-|                                     |   passwords, status) |
-|                                     +–––––––––––+
-|
-|  JSON {ok | expired | invalid}
-+–––––––––––––––– back to Client
-
----
+## Architecture (Mermaid Diagram)
+```mermaid
+flowchart TD
+  A[Client Browser] -- GET --> CF[CloudFront<br/>(OAC to S3 Static Site)]
+  CF --> S3Site[S3 Bucket (Static Site)<br/>index.html, JS, CSS]
+  A -- POST /login --> APIGW[API Gateway<br/>Route: /login]
+  APIGW --> L[Lambda Function<br/>login_handler]
+  L -- s3:GetObject --> S3Data[S3 Bucket (Data)<br/>users.json (hashed passwords, status)]
+  L -- JSON {ok | expired | invalid} --> A
 
 ## Files in This Repository
 
