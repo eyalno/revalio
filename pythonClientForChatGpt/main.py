@@ -11,6 +11,11 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# keep your app's INFO-level logging but silence verbose HTTP logs
+logging.getLogger("openai").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
 class ChatGPTConfig:
     """Configuration class for ChatGPT conversation parameters."""
     def __init__(self):
