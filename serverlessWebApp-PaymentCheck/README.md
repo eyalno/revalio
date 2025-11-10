@@ -41,6 +41,7 @@ This repository contains a small static serverless web application (in `FrontEnd
           |
           |  JSON {ok | expired | invalid}
           +-------------------------------- back to Client
+          ![alt text](image.png)
 
 
 Files included in this repo:
