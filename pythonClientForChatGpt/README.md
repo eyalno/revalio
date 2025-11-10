@@ -12,7 +12,8 @@ This application allows you to have an interactive conversation with ChatGPT abo
 1. Clone the repository:
 ```bash
 git clone https://github.com/eyalno/revalio.git
-cd pythonClientForChatGpt
+cd revalio/pythonClientForChatGpt
+
 ```
 
 2. Create and activate a virtual environment:
@@ -23,7 +24,7 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
 3. Install the required packages:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 4. Create a `.env` file in the project root with the following content:
@@ -44,7 +45,7 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
 2. Run the application:
 ```bash
-python main.py
+python3 main.py
 ```
 
 3. The application will:
