@@ -25,11 +25,11 @@ This README explains how to:
 
 ```mermaid
 flowchart TD
-  A[Client Browser] --> CF[CloudFront (OAC to S3 Static Site)]
-  CF --> S3Site[S3 Bucket - Static Site (index.html, JS, CSS)]
+  A[Client Browser] --> CF[CloudFront - OAC to S3 Static Site]
+  CF --> S3Site[S3 Bucket - Static Site: index.html, JS, CSS]
   A --> APIGW[API Gateway - /login]
   APIGW --> L[Lambda Function - login_handler]
-  L --> S3Data[S3 Bucket - Data (users.json)]
+  L --> S3Data[S3 Bucket - Data: users.json]
   L --> A
 
 ## Files in This Repository
