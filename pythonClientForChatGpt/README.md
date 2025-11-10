@@ -24,7 +24,7 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 
 3. Install the required packages:
 ```bash
-pip3 install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 4. update `.env` file in the project root with the following content:
