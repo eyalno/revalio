@@ -1,3 +1,40 @@
+
+codee	Modular and reusable: 
+
+mkdir -p ~/.terraform.d/plugins
+
+mkdir /Users/eyalnoy/IdeaProjects/revalio/serverlessWebApp-PaymentCheck/terraform/terraformer/s3
+
+cat > provider.tf << 'EOF'
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-2"
+}
+EOF
+
+# Initialize to download the provider
+terraform init
+
+# Now try Terraformer again
+cd /Users/eyalnoy/IdeaProjects/revalio/serverlessWebApp-PaymentCheck/terraform/terraformer/s3
+terraformer import aws \
+  --resources=s3 \
+  --regions=us-east-2 \
+  --filter=aws_s3_bucket=regex:^demo-bucket-trf123$ \
+  --path-output=generate
+
+
+
+copilot suggestions If you want to upload assets from CI or your Lambda, create an IAM principal with a narrowly-scoped policy to s3:PutObject and s3:GetObject for this bucket (I left that as the next todo item).
+
 # Task 2: Serverless Web Application with Payment Check
 
 This repository contains a small **static serverless web application** (in `FrontEnd/`) that demonstrates a simple login flow which checks a user's payment status stored in an **S3 object**.  

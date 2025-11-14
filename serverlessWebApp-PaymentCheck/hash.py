@@ -1,4 +1,10 @@
+ #pip3 install passlib
+
 from passlib.hash import pbkdf2_sha256
 
-new_hash = pbkdf2_sha256.hash("jackson")
-print(new_hash)
+password = input("Enter password to hash: ")
+
+hashed = pbkdf2_sha256.hash(password)
+
+print("Hashed password:")
+print(hashed)
