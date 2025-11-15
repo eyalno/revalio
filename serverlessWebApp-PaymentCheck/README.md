@@ -1,39 +1,83 @@
 
-codee	Modular and reusable: 
-
-mkdir -p ~/.terraform.d/plugins
-
-mkdir /Users/eyalnoy/IdeaProjects/revalio/serverlessWebApp-PaymentCheck/terraform/terraformer/s3
-
-cat > provider.tf << 'EOF'
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = "us-east-2"
-}
-EOF
-
 # Initialize to download the provider
 terraform init
 
-# Now try Terraformer again
-cd /Users/eyalnoy/IdeaProjects/revalio/serverlessWebApp-PaymentCheck/terraform/terraformer/s3
-terraformer import aws \
-  --resources=s3 \
-  --regions=us-east-2 \
-  --filter=aws_s3_bucket=regex:^demo-bucket-trf123$ \
-  --path-output=generate
+
+# Terraform Deployments. 2 Step :
+  Step 1:
+    deploy s3 bucket and cloud front first to avoid circular dependency 
+
+    terraform apply \
+      -target=aws_s3_bucket.static_site \
+      -target=aws_s3_bucket_versioning.static_site_versioning \
+      -target=aws_s3_bucket_server_side_encryption_configuration.static_site_sse \
+      -target=aws_cloudfront_origin_access_control.oac \
+      -target=aws_cloudfront_distribution.cdn 
+
+  #update FrontEnd/script.js url with domain 
+    const API_URL = "https://YOUR_CLOUDFRONT_DOMAIN/login";
+    e.g cloudfront_domain = "d1aip92akmbkqu.cloudfront.net"
+
+  Step 2:
+    Deploy remaining resources
+      terraform apply -var="frontend_domain=YOUR_CLOUDFRONT_DOMAIN"
+
+# populate DynamoDB table
+    
+  Example content:
+
+  [
+    { # valid paid
+      "username": "eyal",   
+      "password": "eyal",
+      "paymentStatus": "paid",
+      "expires": "2025-12-31"
+    },
+    { # valid expired
+      "username": "jackson",
+      "password": "jackson",
+      "paymentStatus": "expired",
+      "expires": "2024-06-30"
+    },
+    { # invalid credentials 
+      "username": "eyal",
+      "password": "noy",
+      "paymentStatus": "expired",
+      "expires": "2024-06-30"
+    }
+  ]
+
+  
+  Input	Expected Response
+  eyal / eyal	{ "status": "Welcome" }
+  jackson / jackson	{ "status": "payment expired" }
+  eyal / noy	{ "status": "Invalid credentials" }
 
 
+  Password Hasing:
+    pip3 install passlib
+    python3 hash.py
 
-copilot suggestions If you want to upload assets from CI or your Lambda, create an IAM principal with a narrowly-scoped policy to s3:PutObject and s3:GetObject for this bucket (I left that as the next todo item).
+  paste the hashed password to dynamoDB user_data table
+
+
+# Testing
+  Browse the cloudfront Domain and try different user/password combinations
+
+# Troubleshoot different integration points:
+  api_endpoint = "https://API_ENDPOINT.execute-api.us-east-2.amazonaws.com"
+ curl -X POST https://API_ENDPOINT.execute-api.us-east-2.amazonaws.com/dev/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "eyal", "password": "eyal"}'
+
+  Lambda Test Event:
+
+    You can test directly in the AWS Lambda console:
+
+    {
+      "body": "{\"username\": \"eyal\", \"password\": \"eyal\"}"
+    }
+
 
 # Task 2: Serverless Web Application with Payment Check
 
@@ -60,8 +104,6 @@ This README explains how to:
 
 ## Architecture Diagram
 
-<img width="1536" height="1024" alt="architecture" src="https://github.com/user-attachments/assets/3e630416-81b0-4bf7-9763-de13d02a3df8" />
-
 
 
 
@@ -72,87 +114,9 @@ This README explains how to:
 | `FrontEnd/index.html` | Example static UI |
 | `FrontEnd/script.js` | Client-side login logic |
 | `FrontEnd/style.css` | Styling for the web app |
-| `lambda_function.py` | Server-side Lambda to validate credentials securely |
+| `terraform/login_handler.py` | Server-side Lambda to validate credentials securely |
 | `hash.py` | Helper script for generating password hashes (requires `passlib`) |
 
-To install the hashing dependency:
-```bash
-pip3 install passlib
 
 
-⸻-
 
-Sample User Data File (S3 Object)
-
-File name: users.json
-
-Example content:
-
-[
-  {
-    "username": "eyal",
-    "password": "eyal",
-    "paymentStatus": "paid",
-    "expires": "2025-12-31"
-  },
-  {
-    "username": "jackson",
-    "password": "jackson",
-    "paymentStatus": "expired",
-    "expires": "2024-06-30"
-  },
-  {
-    "username": "eyal",
-    "password": "noy",
-    "paymentStatus": "expired",
-    "expires": "2024-06-30"
-  }
-]
-
-⚠️ Security Tip: In a production setup, store password hashes (e.g., bcrypt) instead of plaintext passwords.
-
-⸻
-
-Testing
-
-CloudFront (Static Frontend)
-
-https://d3hsdedk703oiv.cloudfront.net
-
-Expected Responses
-
-Input	Expected Response
-eyal / eyal	{ "status": "Welcome" }
-jackson / jackson	{ "status": "payment expired" }
-eyal / noy	{ "status": "Invalid credentials" }
-
-
-⸻
-
-Lambda Test Event
-
-You can test directly in the AWS Lambda console:
-
-{
-  "body": "{\"username\": \"eyal\", \"password\": \"eyal\"}"
-}
-
-
-⸻
-
-API Gateway Test via cURL
-
-curl -X POST https://yuedw9yzch.execute-api.us-east-2.amazonaws.com/dev/login \
-  -H "Content-Type: application/json" \
-  -d '{"username": "eyal", "password": "eyal"}'
-
-
-⸻
-
-Security Notes
-	•	Never return passwords or sensitive data in responses.
-	•	Always use HTTPS (API Gateway provides HTTPS by default).
-	•	Use IAM policies to restrict S3 access to Lambda only.
-	•	For production, hash passwords and store them securely.
-
-⸻

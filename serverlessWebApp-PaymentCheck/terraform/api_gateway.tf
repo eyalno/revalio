@@ -1,30 +1,3 @@
-# terraform apply \
-#   -target=aws_apigatewayv2_api.api \
-#   -target=aws_apigatewayv2_integration.login_handler \
-#   -target=aws_apigatewayv2_route.login_route \
-#   -target=aws_apigatewayv2_stage.dev \
-#   -target=aws_lambda_permission.allow_apigw \
-#   -auto-approve
-
-
-# terraform destroy \
-#   -target=aws_apigatewayv2_route.login_route \
-#   -target=aws_apigatewayv2_integration.login_handler \
-#   -target=aws_apigatewayv2_stage.dev \
-#   -target=aws_apigatewayv2_api.api \
-#   -target=aws_lambda_permission.allow_apigw \
-#   -auto-approve
-
-
-############################
-#  Lambda (existing)
-############################
-# IMPORTANT:
-# Replace this with your actual Lambda resource OR import the Lambda ARN.
-# This data source allows us to reference the existing Lambda.
-# data "aws_lambda_function" "login" {
-#   function_name = "LoginHandler"
-# }
 
 ############################
 #  API Gateway v2 HTTP API
