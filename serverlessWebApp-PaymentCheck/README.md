@@ -63,6 +63,10 @@ which means:
 This avoids S3 and CloudFront circular dependencies.
 
 ## Step 1: Deploy S3 and CloudFront Only
+make sure you are pointing to the right enviornment:
+echo $AWS_PROFILE
+echo $AWS_REGION
+
 Run inside the `terraform/` directory:
 
 ```
@@ -73,7 +77,7 @@ terraform init
 terraform apply   -target=aws_s3_bucket.static_site   -target=aws_s3_bucket_versioning.static_site_versioning   -target=aws_s3_bucket_server_side_encryption_configuration.static_site_sse   -target=aws_cloudfront_origin_access_control.oac   -target=aws_cloudfront_distribution.cdn   -auto-approve
 ```
 
-After deployment, get your CloudFront domain:
+After deployment, get your CloudFront domain ():
 
 ```
 aws cloudfront list-distributions --query "DistributionList.Items[*].DomainName" --output text
@@ -141,12 +145,16 @@ Insert items into your DynamoDB `user_data` table:
 
 # Password Hashing
 
+cd ..
+```
 Install passlib:
-
+```
+python3 -m venv venv
+```
+source venv/bin/activate
 ```
 pip3 install passlib
 ```
-
 Generate a hash:
 ```
 python3 hash.py
