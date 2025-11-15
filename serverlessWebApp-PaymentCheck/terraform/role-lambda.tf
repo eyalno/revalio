@@ -1,3 +1,7 @@
+# ########################################
+# # IAM Role for Lambda
+# ########################################
+
 # resource "aws_iam_role" "lambda_role" {
 #   name = "lambda-basic-role"
 
@@ -6,19 +10,27 @@
 #     Statement = [
 #       {
 #         Effect = "Allow"
+#         Action = "sts:AssumeRole"
 #         Principal = {
 #           Service = "lambda.amazonaws.com"
 #         }
-#         Action = "sts:AssumeRole"
 #       }
 #     ]
 #   })
 # }
 
+# ########################################
+# # Attach AWS Managed Basic Execution Policy
+# ########################################
+
 # resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 #   role       = aws_iam_role.lambda_role.name
 #   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 # }
+
+# ########################################
+# # DynamoDB Access Policy for Lambda
+# ########################################
 
 # resource "aws_iam_policy" "lambda_dynamodb_policy" {
 #   name = "lambda-dynamodb-access"
@@ -38,6 +50,10 @@
 #     ]
 #   })
 # }
+
+# ########################################
+# # Attach DynamoDB Policy to Lambda Role
+# ########################################
 
 # resource "aws_iam_role_policy_attachment" "lambda_dynamodb_attach" {
 #   role       = aws_iam_role.lambda_role.name

@@ -1,121 +1,204 @@
+# Serverless Web Application with Payment Check
 
-# Initialize to download the provider
-terraform init
+This repository contains a **static serverless web application** hosted on **S3** and delivered through **CloudFront**, with backend authentication handled by **API Gateway**, **Lambda**, and **DynamoDB**.
 
-
-# Terraform Deployments. 2 Step :
-  Step 1:
-    deploy s3 bucket and cloud front first to avoid circular dependency 
-
-    terraform apply \
-      -target=aws_s3_bucket.static_site \
-      -target=aws_s3_bucket_versioning.static_site_versioning \
-      -target=aws_s3_bucket_server_side_encryption_configuration.static_site_sse \
-      -target=aws_cloudfront_origin_access_control.oac \
-      -target=aws_cloudfront_distribution.cdn 
-
-  #update FrontEnd/script.js url with domain 
-    const API_URL = "https://YOUR_CLOUDFRONT_DOMAIN/login";
-    e.g cloudfront_domain = "d1aip92akmbkqu.cloudfront.net"
-
-  Step 2:
-    Deploy remaining resources
-      terraform apply -var="frontend_domain=YOUR_CLOUDFRONT_DOMAIN"
-
-# populate DynamoDB table
-    
-  Example content:
-
-  [
-    { # valid paid
-      "username": "eyal",   
-      "password": "eyal",
-      "paymentStatus": "paid",
-      "expires": "2025-12-31"
-    },
-    { # valid expired
-      "username": "jackson",
-      "password": "jackson",
-      "paymentStatus": "expired",
-      "expires": "2024-06-30"
-    },
-    { # invalid credentials 
-      "username": "eyal",
-      "password": "noy",
-      "paymentStatus": "expired",
-      "expires": "2024-06-30"
-    }
-  ]
-
-  
-  Input	Expected Response
-  eyal / eyal	{ "status": "Welcome" }
-  jackson / jackson	{ "status": "payment expired" }
-  eyal / noy	{ "status": "Invalid credentials" }
-
-
-  Password Hasing:
-    pip3 install passlib
-    python3 hash.py
-
-  paste the hashed password to dynamoDB user_data table
-
-
-# Testing
-  Browse the cloudfront Domain and try different user/password combinations
-
-# Troubleshoot different integration points:
-  api_endpoint = "https://API_ENDPOINT.execute-api.us-east-2.amazonaws.com"
- curl -X POST https://API_ENDPOINT.execute-api.us-east-2.amazonaws.com/dev/login \
-  -H "Content-Type: application/json" \
-  -d '{"username": "eyal", "password": "eyal"}'
-
-  Lambda Test Event:
-
-    You can test directly in the AWS Lambda console:
-
-    {
-      "body": "{\"username\": \"eyal\", \"password\": \"eyal\"}"
-    }
-
-
-# Task 2: Serverless Web Application with Payment Check
-
-This repository contains a small **static serverless web application** (in `FrontEnd/`) that demonstrates a simple login flow which checks a user's payment status stored in an **S3 object**.  
-
-This README explains how to:
-- Deploy the static site to Amazon S3 (optionally fronted by CloudFront)
-- Format the user-data file
-- Validate login credentials (client-side demo and secure server-side)
-- Test the application via Lambda or API Gateway
+which means:
+- CloudFront serves **static files only**.
+- API Gateway is called **directly** from the frontend.
+- CloudFront does not forward API traffic.
+- Simpler, stable, and avoids CloudFront behavior complexity.
 
 ---
 
-## What This Task Requires
+# Architecture Overview
 
-- Create a static serverless web app hosted on **S3** (optionally with **CloudFront**)
-- Store a **user data file** in S3 containing `username`, `password`, and `paymentStatus`
-- On login, the web app should:
-  - Validate credentials against the file
-  - If payment is expired, notify the user with a vanilla JavaScript popup
-  - If valid and paid, show a welcome message or grant access
+```
+                           +----------------------+
+                           |        Browser       |
+                           |     (User Device)    |
+                           +----------+-----------+
+                                      |
+                           Static UI  |  POST /login
+                                      |
+                +---------------------+----------------------+
+                |                                            |
+                v                                            v
++-----------------------------+              +-----------------------------+
+|        CloudFront           |              |      API Gateway (HTTP)     |
+|   dxxxxxxxxxxxxxx.cloudfront.net           |  https://API_ID.../dev/login |
++-----------------------------+              +-------------+---------------+
+                |                                            |
+                |  GET /index.html                           |  POST /dev/login
+                |  GET /script.js                            |
+                |  GET /style.css                            |
+                v                                            v
++-----------------------------+              +-----------------------------+
+|             S3              |              |           Lambda            |
+|    Static Web Assets        |              |    login_handler.py         |
++-----------------------------+              +-------------+---------------+
+                                                              |
+                                                              v
+                                            +-----------------------------+
+                                            |           DynamoDB          |
+                                            |         user_data           |
+                                            +-----------------------------+
+```
 
 ---
 
-## Architecture Diagram
-
-
-
-
-## Files in This Repository
+# Repository Structure
 
 | File | Description |
-|------|--------------|
-| `FrontEnd/index.html` | Example static UI |
-| `FrontEnd/script.js` | Client-side login logic |
-| `FrontEnd/style.css` | Styling for the web app |
-| `terraform/login_handler.py` | Server-side Lambda to validate credentials securely |
-| `hash.py` | Helper script for generating password hashes (requires `passlib`) |
+|------|-------------|
+| `FrontEnd/index.html` | UI for login |
+| `FrontEnd/script.js` | Sends login request to API Gateway |
+| `FrontEnd/style.css` | CSS styling |
+| `terraform/` | Terraform IaC for entire system |
+| `terraform/login_handler.py` | Lambda authentication logic |
+| `hash.py` | Generates password hashes using passlib |
+
+---
+
+# Deployment (2 Step Method)
+This avoids S3 and CloudFront circular dependencies.
+
+## Step 1: Deploy S3 and CloudFront Only
+Run inside the `terraform/` directory:
+
+```
+terraform init
+```
+
+```
+terraform apply   -target=aws_s3_bucket.static_site   -target=aws_s3_bucket_versioning.static_site_versioning   -target=aws_s3_bucket_server_side_encryption_configuration.static_site_sse   -target=aws_cloudfront_origin_access_control.oac   -target=aws_cloudfront_distribution.cdn   -auto-approve
+```
+
+After deployment, get your CloudFront domain:
+
+```
+aws cloudfront list-distributions --query "DistributionList.Items[*].DomainName" --output text
+```
+
+Update your `FrontEnd/script.js`:
+
+```
+const API_URL = "https://YOUR_API_ID.execute-api.us-east-2.amazonaws.com/dev/login";
+```
+
+
+## Step 2: Deploy Backend Services
+
+```
+terraform apply -var="frontend_domain=YOUR_CLOUDFRONT_DOMAIN" -auto-approve
+```
+
+This deploys:
+
+- API Gateway
+- Lambda
+- DynamoDB
+- IAM roles
+
+
+---
+
+# DynamoDB User Data
+
+Insert items into your DynamoDB `user_data` table:
+
+```
+[
+  {
+    "username": "eyal",
+    "password": "eyal",
+    "paymentStatus": "paid",
+    "expires": "2025-12-31"
+  },
+  {
+    "username": "jackson",
+    "password": "jackson",
+    "paymentStatus": "expired",
+    "expires": "2024-06-30"
+  },
+  {
+    "username": "eyal",
+    "password": "noy",
+    "paymentStatus": "expired",
+    "expires": "2024-06-30"
+  }
+]
+```
+
+### Expected Behavior
+
+| Input | Expected |
+|--------|----------|
+| eyal / eyal | { "status": "Welcome" } |
+| jackson / jackson | { "status": "payment expired" } |
+| eyal / noy | { "status": "Invalid credentials" } |
+
+---
+
+# Password Hashing
+
+Install passlib:
+
+```
+pip3 install passlib
+```
+
+Generate a hash:
+```
+python3 hash.py
+```
+
+Paste results into DynamoDB instead of plain passwords.
+
+---
+
+# Testing
+
+## Test CloudFront UI
+
+```
+https://YOUR_CLOUDFRONT_DOMAIN
+```
+
+## Test API Gateway Directly
+
+```
+curl -i -X POST "https://API_ID.execute-api.us-east-2.amazonaws.com/dev/login"   -H "Content-Type: application/json"   -d '{"username": "eyal", "password": "eyal"}'
+```
+
+## Test Lambda in Console
+
+```
+{
+  "body": "{"username": "eyal", "password": "eyal"}"
+}
+```
+
+---
+
+# Troubleshooting
+
+## 404 Not Found
+Your route `/login` is not deployed to stage `dev`.
+
+Check:
+
+```
+aws apigatewayv2 get-routes --api-id API_ID --region us-east-2
+```
+
+## 500 Internal Error
+Common causes:
+- Wrong environment variables
+- DynamoDB table name mismatch
+- Password hashing mismatch
+
+## CloudFront returns 403
+Not applicable for Option C API calls. Only affects static S3 files.
 
 
 

@@ -1,3 +1,7 @@
+########################################
+# Terraform Settings
+########################################
+
 terraform {
   required_providers {
     aws = {
@@ -11,14 +15,22 @@ terraform {
   }
 }
 
+########################################
+# AWS Provider
+########################################
+
 provider "aws" {
-  region = "us-east-2"
+  region  = "us-east-2"
   profile = "revalio"
-  #profile = "default"
+  # profile = "default"
 }
 
+########################################
+# Local Variables
+########################################
 
 locals {
-  #frontend_domain = aws_cloudfront_distribution.cdn.domain_name
+  # For production:
+  # frontend_domain = aws_cloudfront_distribution.cdn.domain_name
   frontend_domain = "*"
 }

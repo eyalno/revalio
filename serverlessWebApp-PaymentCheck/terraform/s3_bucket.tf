@@ -1,29 +1,6 @@
 ########################################
-# OPTIONAL: destroy-only targets you added earlier
+# S3 Bucket: Static Frontend Hosting
 ########################################
-# terraform apply \
-#   -target=aws_s3_bucket.static_site \
-#   -target=aws_s3_bucket_versioning.static_site_versioning \
-#   -target=aws_s3_bucket_server_side_encryption_configuration.static_site_sse \
-#   -target=aws_s3_object.frontend_files \
-#   -auto-approve
-
-
-#
-# terraform destroy \
-#   -target=aws_s3_object.frontend_files \
-#   -target=aws_s3_bucket_policy.static_site \
-#   -target=aws_s3_bucket_server_side_encryption_configuration.static_site_sse \
-#   -target=aws_s3_bucket_versioning.static_site_versioning \
-#   -auto-approve
-
-
-
-
-
-
-
-
 
 resource "aws_s3_bucket" "static_site" {
   bucket        = "demo-bucket-revalio"
@@ -32,15 +9,22 @@ resource "aws_s3_bucket" "static_site" {
   object_lock_enabled = false
 }
 
+########################################
+# Versioning
+########################################
 
 resource "aws_s3_bucket_versioning" "static_site_versioning" {
   bucket = aws_s3_bucket.static_site.id
 
   versioning_configuration {
-    status     = "Suspended"   # or "Enabled"
-    mfa_delete = "Disabled"    # or "Enabled"
+    status     = "Suspended"   # Use "Enabled" for production
+    mfa_delete = "Disabled"
   }
 }
+
+########################################
+# Encryption
+########################################
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "static_site_sse" {
   bucket = aws_s3_bucket.static_site.id
@@ -54,24 +38,22 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "static_site_sse" 
   }
 }
 
-
 ########################################
-# Upload FRONTEND FILES
+# FRONTEND FILE UPLOAD LOGIC
 ########################################
 
 locals {
   frontend_dir = "${path.module}/../FrontEnd"
 
-  # Upload all files EXCEPT hidden files (starting with ".")
+  # All files in FrontEnd except hidden files
   upload_files = [
     for f in fileset(local.frontend_dir, "**") :
     f if !startswith(basename(f), ".")
   ]
 }
 
-
 ########################################
-# Upload all frontend files (HTML, CSS, JS, etc)
+# Upload all frontend files (HTML, CSS, JS, assets)
 ########################################
 
 resource "aws_s3_object" "frontend_files" {
@@ -82,22 +64,25 @@ resource "aws_s3_object" "frontend_files" {
   source = "${local.frontend_dir}/${each.value}"
   etag   = filemd5("${local.frontend_dir}/${each.value}")
 
+  # Auto detect content-type from extension
   content_type = lookup(
     {
-      "html" = "text/html"
-      "css"  = "text/css"
-      "js"   = "application/javascript"
-      "json" = "application/json"
+      html = "text/html"
+      css  = "text/css"
+      js   = "application/javascript"
+      json = "application/json"
+      png  = "image/png"
+      jpg  = "image/jpeg"
+      jpeg = "image/jpeg"
+      svg  = "image/svg+xml"
     },
-    split(".", each.value)[length(split(".", each.value)) - 1],
+    lower(split(".", each.value)[length(split(".", each.value)) - 1]),
     "application/octet-stream"
   )
 }
 
-
-
 ########################################
-# S3 Bucket Policy for OAC access
+# S3 Bucket Policy for CloudFront OAC
 ########################################
 
 data "aws_caller_identity" "current" {}
@@ -114,7 +99,7 @@ resource "aws_s3_bucket_policy" "static_site" {
         Principal = {
           Service = "cloudfront.amazonaws.com"
         },
-        Action = "s3:GetObject",
+        Action   = "s3:GetObject",
         Resource = "${aws_s3_bucket.static_site.arn}/*",
         Condition = {
           StringEquals = {
