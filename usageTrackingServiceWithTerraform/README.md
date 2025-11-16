@@ -85,8 +85,8 @@ Install PostgreSQL client:
 Install Python dependency `pg8000` directly into the Lambda source
 directories:
 
-    pip install pg8000 -t lambda_init_src
-    pip install pg8000 -t lambda_src
+    pip3 install pg8000 -t lambda_init_src
+    pip3 install pg8000 -t lambda_src
 
 ## Deployment
 
