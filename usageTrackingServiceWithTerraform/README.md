@@ -17,11 +17,11 @@ pip3 install pg8000 -t python
 zip -r pg8000_layer.zip python
 
 
-curl -X POST "https://v9c9itqce3.execute-api.us-east-2.amazonaws.com/usage" \
+curl -X POST "https://022585m03f.execute-api.us-east-2.amazonaws.com/usage" \
   -H "Content-Type: application/json" \
   -d '{"user":"user123","usage":150}'   
 
-  curl -X GET "https://v9c9itqce3.execute-api.us-east-2.amazonaws.com/stats/average"
+  curl -X GET "https://022585m03f.execute-api.us-east-2.amazonaws.com/stats/average"
 
   {
   "rawPath": "/stats/average",
