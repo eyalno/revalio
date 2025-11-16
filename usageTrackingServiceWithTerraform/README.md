@@ -8,8 +8,14 @@ You MUST have psql installed on your local machine where you run Terraform.
 brew install postgresql
 To install on macOS:
 
-
 run lambda init 1 time 
+
+mkdir lambda_layer
+cd lambda_layer
+mkdir python
+pip3 install pg8000 -t python
+zip -r pg8000_layer.zip python
+
 
 curl -X POST "https://v9c9itqce3.execute-api.us-east-2.amazonaws.com/usage" \
   -H "Content-Type: application/json" \

@@ -1,17 +1,23 @@
-
+data "archive_file" "usage_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda_src"
+  output_path = "${path.module}/usage_handler.zip"
+}
 resource "aws_lambda_function" "usage_handler" {
   function_name = "UsageHandlerProd-tf"
   role          = "arn:aws:iam::997233416610:role/usage-tracking-prod-lambda-role"
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
 
-  filename         = "${path.module}/usage_handler.zip"
-  source_code_hash = filebase64sha256("${path.module}/usage_handler.zip")
+  filename         = data.archive_file.usage_zip.output_path
+  source_code_hash = data.archive_file.usage_zip.output_base64sha256
 
   vpc_config {
     subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
+
+  layers = [aws_lambda_layer_version.pg8000.arn]
 
   environment {
     variables = {
@@ -28,3 +34,12 @@ resource "aws_lambda_function" "usage_handler" {
   memory_size = 256
   architectures = ["x86_64"]
 }
+
+resource "aws_lambda_layer_version" "pg8000" {
+  filename   = "${path.module}/pg8000_layer.zip"
+  layer_name = "pg8000-layer"
+  compatible_runtimes = ["python3.12"]
+}
+
+
+  
