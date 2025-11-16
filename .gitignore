@@ -1,4 +1,20 @@
-/.DS_Store
-usageTrackingService-Terraform /.DS_Store
-usageTrackingService-Terraform /.terraform.lock.hcl
-usageTrackingService-Terraform /terraform.tfstate.backup
+# OS files
+.DS_Store
+
+# Terraform local state
+terraform.tfstate
+terraform.tfstate.backup
+
+# Lambda build artifacts
+*.zip
+*.pyc
+__pycache__/
+
+# Terraform build cache
+.terraform/
+.terraform.lock.hcl
+
+# Ignore python libraries accidentally unpacked
+**/python/**
+**/site-packages/**
+**/__pycache__/**
