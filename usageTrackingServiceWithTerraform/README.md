@@ -150,7 +150,7 @@ Terraform will:
 
 ## Cleanup
 
-lambda init can be deleted adter deployment.
+lambda init can be deleted after deployment.
 
 Destroy all resources:
 
