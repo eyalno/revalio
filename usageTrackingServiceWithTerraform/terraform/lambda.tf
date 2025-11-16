@@ -14,16 +14,22 @@ data "archive_file" "main_zip" {
   output_path = "${path.module}/lambda_main.zip"
 }
 
+# data "archive_file" "pg8000_zip" {
+#   type        = "zip"
+#   source_dir  = "${path.module}/lambda_layer/python"
+#   output_path = "${path.module}/lambda_layer/pg8000_layer.zip"
+# }
 
 #############################################
 # PG8000 LAYER (UPLOAD YOUR ZIP FIRST)
 #############################################
 
-resource "aws_lambda_layer_version" "pg8000" {
-  filename   = "${path.module}/lambda_layer/pg8000_layer.zip"
-  layer_name = "pg8000-layer"
-  compatible_runtimes = ["python3.12"]
-}
+# resource "aws_lambda_layer_version" "pg8000" {
+#   filename   = data.archive_file.pg8000_zip.output_path
+#   source_code_hash  = data.archive_file.pg8000_zip.output_base64sha256
+#   layer_name = "pg8000-layer"
+#   compatible_runtimes = ["python3.12"]
+# }
 
 
 #############################################
@@ -44,7 +50,7 @@ resource "aws_lambda_function" "init_db" {
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
-  layers = [aws_lambda_layer_version.pg8000.arn]
+ # layers = [aws_lambda_layer_version.pg8000.arn]
 
   environment {
     variables = {
@@ -94,7 +100,7 @@ resource "aws_lambda_function" "usage_handler" {
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
-  layers = [aws_lambda_layer_version.pg8000.arn]
+  # layers = [aws_lambda_layer_version.pg8000.arn]
 
   environment {
     variables = {

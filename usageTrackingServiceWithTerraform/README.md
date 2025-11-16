@@ -1,51 +1,11 @@
 
+# Design an implementation notes
 
-# i wasn't able to create secret manager 
-same issue with terraform lamnda roles 
-dynamo db items
+I was unable to create the Secrets Manager resource due to IAM restrictions, so the RDS username and password are stored directly in variables.tf.
 
-You MUST have psql installed on your local machine where you run Terraform.
-brew install postgresql
-To install on macOS:
-
+I also could not create the Lambda execution role through Terraform because of permission limits. Instead, the configuration references the execution role that was manually created in the AWS console.
 run lambda init 1 time 
 
-mkdir lambda_layer
-cd lambda_layer
-mkdir python
-pip3 install pg8000 -t python
-zip -r pg8000_layer.zip python
-
-
-curl -X POST "https://022585m03f.execute-api.us-east-2.amazonaws.com/usage" \
-  -H "Content-Type: application/json" \
-  -d '{"user":"user123","usage":150}'   
-
-  curl -X GET "https://022585m03f.execute-api.us-east-2.amazonaws.com/stats/average"
-
-  {
-  "rawPath": "/stats/average",
-  "requestContext": {
-    "http": {
-      "method": "GET"
-    }
-  }
-}
-
-{
-  "rawPath": "/usage",
-  "requestContext": {
-    "http": {
-      "method": "POST"
-    }
-  },
-  "body": "{\"user\":\"user123\", \"usage\":150}"
-}
-
-Purpose of DynamoDB
-	•	Keep fast per-user aggregates
-	•	Avoid scanning RDS for every user’s total
-	•	Enable constant-time lookups (e.g., in future “user stats” endpoint)
 
 # Usage Tracking Service  
 AWS Serverless Architecture – API Gateway → Lambda → RDS (Postgres) + DynamoDB  
@@ -99,33 +59,56 @@ usage-tracking/
   usage_handler.zip
 ```
 
+## Purpose of DynamoDB
+	•	Keep fast per-user aggregates
+	•	Avoid scanning RDS for every user’s total
+	•	Enable constant-time lookups (e.g., in future “user stats” endpoint)
+
+
 ## Deployment
-### Initialize Terraform
+
+You MUST have psql installed on your local machine where you run Terraform.
+brew install postgresql
+
+mkdir /terraform/lambda_layer
+cd lambda_layer
+mkdir python
+pip3 install pg8000 -t python
+
 terraform init
 
-### Apply Deployment
-terraform apply \
-  -var="db_username=myuser" \
-  -var="db_password=mypassword"
-
-## Database Setup
-Connect via psql:
-psql -h <db_endpoint> -U myuser -d usage_tracking
-
-Create table:
-CREATE TABLE IF NOT EXISTS usage_events (
-  id bigserial PRIMARY KEY,
-  user_id text NOT NULL,
-  usage_time double precision NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+terraform apply
 
 ## Testing
-POST /usage:
-curl -X POST "$API/usage" -H "Content-Type: application/json" -d '{"user_id":"eyal","usage_time":120}'
 
-GET /stats/average:
-curl "$API/stats/average"
+curl -X POST "https://YOUR_API_GATEWAY/usage" \
+  -H "Content-Type: application/json" \
+  -d '{"user":"user123","usage":150}'   
+
+curl -X GET "https://YOUR_API_GATEWAY/stats/average"
+
+
+## Lambda Testing
+  {
+  "rawPath": "/stats/average",
+  "requestContext": {
+    "http": {
+      "method": "GET"
+    }
+  }
+}
+
+{
+  "rawPath": "/usage",
+  "requestContext": {
+    "http": {
+      "method": "POST"
+    }
+  },
+  "body": "{\"user\":\"user123\", \"usage\":150}"
+}
+
+
 
 ## Cleanup
 terraform destroy

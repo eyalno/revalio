@@ -1,7 +1,3 @@
-
-
-# i wasn't able to create secret manager 
-
 variable "region" {
   type    = string
   default = "us-east-2"
