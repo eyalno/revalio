@@ -58,6 +58,14 @@ which means:
 | `hash.py` | Generates password hashes using passlib |
 
 ---
+# Design an implementation notes
+The deployment process uses two steps to avoid circular dependencies between CloudFront, API Gateway, and S3.
+
+I was not able to create the Lambda execution role through Terraform because of IAM permission limits, so the configuration references the role that was created manually in the AWS console.
+
+The script.js file requires a manual update before each deployment. The API URL must be replaced with the CloudFront domain, and only then should the file be uploaded to S3.
+
+
 
 # Deployment (2 Step Method)
 This avoids S3 and CloudFront circular dependencies.
