@@ -14,20 +14,22 @@ data "archive_file" "main_zip" {
   output_path = "${path.module}/lambda_main.zip"
 }
 
+# Optional: use only if you build a pg8000 layer locally
 # data "archive_file" "pg8000_zip" {
 #   type        = "zip"
 #   source_dir  = "${path.module}/lambda_layer/python"
 #   output_path = "${path.module}/lambda_layer/pg8000_layer.zip"
 # }
 
+
 #############################################
-# PG8000 LAYER (UPLOAD YOUR ZIP FIRST)
+# OPTIONAL PG8000 LAYER
 #############################################
 
 # resource "aws_lambda_layer_version" "pg8000" {
-#   filename   = data.archive_file.pg8000_zip.output_path
-#   source_code_hash  = data.archive_file.pg8000_zip.output_base64sha256
-#   layer_name = "pg8000-layer"
+#   filename            = data.archive_file.pg8000_zip.output_path
+#   source_code_hash    = data.archive_file.pg8000_zip.output_base64sha256
+#   layer_name          = "pg8000-layer"
 #   compatible_runtimes = ["python3.12"]
 # }
 
@@ -50,7 +52,7 @@ resource "aws_lambda_function" "init_db" {
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
- # layers = [aws_lambda_layer_version.pg8000.arn]
+  # layers = [aws_lambda_layer_version.pg8000.arn]
 
   environment {
     variables = {
@@ -116,5 +118,7 @@ resource "aws_lambda_function" "usage_handler" {
   timeout     = 10
   memory_size = 256
 
-  depends_on = [aws_lambda_invocation.run_init]
+  depends_on = [
+    aws_lambda_invocation.run_init
+  ]
 }

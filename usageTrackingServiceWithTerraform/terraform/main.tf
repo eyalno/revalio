@@ -8,11 +8,14 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
     random = {
       source  = "hashicorp/random"
       version = ">= 3.0"
     }
   }
+
+  required_version = ">= 1.3.0"
 }
 
 ########################################
@@ -22,7 +25,6 @@ terraform {
 provider "aws" {
   region  = "us-east-2"
   profile = "revalio"
-  # profile = "default"
 }
 
 ########################################
@@ -30,7 +32,8 @@ provider "aws" {
 ########################################
 
 locals {
-  # For production:
+  # In prod, replace with CloudFront domain:
   # frontend_domain = aws_cloudfront_distribution.cdn.domain_name
+
   frontend_domain = "*"
 }

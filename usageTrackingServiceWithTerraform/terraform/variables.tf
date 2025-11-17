@@ -1,21 +1,33 @@
+########################################
+# Region
+########################################
+
 variable "region" {
-  type    = string
-  default = "us-east-2"
+  description = "AWS region to deploy resources in"
+  type        = string
+  default     = "us-east-2"
 }
 
+########################################
+# Database Credentials
+########################################
+
 variable "db_username" {
-  type      = string
-  sensitive = true
-  default = "dbadmin"
+  description = "Master username for the RDS PostgreSQL instance"
+  type        = string
+  sensitive   = true
+  default     = "dbadmin"
 }
 
 variable "db_password" {
-  type      = string
-  sensitive = true
-  default = "cezkuR-pebgox-jozwi5tf"
+  description = "Master password for the RDS PostgreSQL instance"
+  type        = string
+  sensitive   = true
+  default     = "CHANGE_ME"   # Do not keep real secrets here
 }
 
 variable "db_name" {
-  type    = string
-  default = "usage_tracking"
+  description = "Initial database name to create"
+  type        = string
+  default     = "usage_tracking"
 }
